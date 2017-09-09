@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Locale;
 
 public class AssistantActivity extends AppCompatActivity {
@@ -26,6 +28,7 @@ public class AssistantActivity extends AppCompatActivity {
     private TextToSpeech toSpeech;
     private String text;
     private int result;
+    private LinkedList<TextView> textViews;
     private AssistantActivity self = this;
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
@@ -77,8 +80,15 @@ public class AssistantActivity extends AppCompatActivity {
                     newText.setText(text + "\n");
                     newText.setTextColor(Color.BLUE);
                     newText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
-
                     linLayToSpeakScrlView.addView(newText);
+
+                    speakScrlView.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+
+                    linLayToSpeakScrlView.postDelayed(new Runnable() {
+                        public void run() {
+                            speakScrlView.fullScroll(HorizontalScrollView.FOCUS_DOWN);
+                        }
+                    }, 100L);
 
                     toSpeech = new TextToSpeech(AssistantActivity.this, new TextToSpeech.OnInitListener() {
                         @Override
@@ -95,8 +105,12 @@ public class AssistantActivity extends AppCompatActivity {
                                     newResponse.setTextColor(Color.RED);
                                     newResponse.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                                     newResponse.setText(text + "\n");
-
                                     linLayToSpeakScrlView.addView(newResponse);
+                                    linLayToSpeakScrlView.postDelayed(new Runnable() {
+                                        public void run() {
+                                            speakScrlView.fullScroll(HorizontalScrollView.FOCUS_DOWN);
+                                        }
+                                    }, 100L);
 
                                 }
                             } else {
