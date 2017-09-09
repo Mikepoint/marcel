@@ -2,13 +2,11 @@ package vcrms.marcel;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.media.Image;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +63,7 @@ public class AssistantActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK && null != data) {
                     ArrayList<String> voiceInText = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     recText.setText(voiceInText.get(0));
+                    text = voiceInText.get(0);
                     toSpeech = new TextToSpeech(AssistantActivity.this, new TextToSpeech.OnInitListener() {
                         @Override
                         public void onInit(int status) {
@@ -74,7 +73,7 @@ public class AssistantActivity extends AppCompatActivity {
                                 {
                                     Toast.makeText(getApplicationContext(), "Internal Error", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    toSpeech.speak("Hello, I am Marcel!", TextToSpeech.QUEUE_FLUSH, null);
+                                    toSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
                                 }
                             } else {
                                 Toast.makeText(getApplicationContext(), "Internal Error", Toast.LENGTH_SHORT).show();
