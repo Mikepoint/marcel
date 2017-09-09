@@ -4,12 +4,10 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -18,7 +16,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -33,6 +33,7 @@ public class AssistantActivity extends AppCompatActivity {
     private LinkedList<TextView> textViews;
     private AssistantActivity self = this;
     private GradientDrawable gradientDrawable = new GradientDrawable();
+    private ArrayList<String> questions = new ArrayList<String>(Arrays.asList("what", "how", "where", "when"));
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
 
@@ -76,9 +77,15 @@ public class AssistantActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK && null != data) {
                     ArrayList<String> voiceInText = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     text = voiceInText.get(0);
+                    for (String question : questions) {
+                        if (text.contains(question)) {
+                            text += "?";
+                        }
+                    }
+                    text = "      " + text.substring(0,1).toUpperCase() + text.substring(1) + "\n";
 
                     TextView newText = new TextView(this);
-                    newText.setText("      " + text.substring(0,1).toUpperCase() + text.substring(1) + "\n");
+                    newText.setText(text);
                     newText.setTextColor(Color.WHITE);
                     gradientDrawable.setCornerRadius(20);
                     gradientDrawable.setColor(Color.BLUE);
