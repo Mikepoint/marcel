@@ -2,12 +2,14 @@ package vcrms.marcel;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.media.Image;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,7 +18,7 @@ import java.util.Locale;
 
 public class AssistantActivity extends AppCompatActivity {
 
-    private Button speakBtn;
+    private ImageButton speakBtn;
     private TextView recText;
     private TextToSpeech toSpeech;
     private String text;
@@ -29,7 +31,7 @@ public class AssistantActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_assistant);
 
-        speakBtn = (Button) findViewById(R.id.speakBtn);
+        speakBtn = (ImageButton) findViewById(R.id.speakBtn);
         recText = (TextView) findViewById(R.id.recText);
 
         speakBtn.setOnClickListener(new View.OnClickListener() {
