@@ -2,12 +2,16 @@ package vcrms.marcel;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Color;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,12 +21,16 @@ import java.util.Locale;
 public class AssistantActivity extends AppCompatActivity {
 
     private ImageButton speakBtn;
-    private TextView recText;
+    private ScrollView speakScrlView;
+    private LinearLayout linLayToSpeakScrlView;
     private TextToSpeech toSpeech;
     private String text;
     private int result;
+    private AssistantActivity self = this;
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +38,8 @@ public class AssistantActivity extends AppCompatActivity {
         setContentView(R.layout.activity_assistant);
 
         speakBtn = (ImageButton) findViewById(R.id.speakBtn);
-        recText = (TextView) findViewById(R.id.recText);
+        speakScrlView = (ScrollView) findViewById(R.id.speakScrlView);
+        linLayToSpeakScrlView = (LinearLayout) findViewById(R.id.linLayToSpeakScrlView);
 
         speakBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,7 +54,7 @@ public class AssistantActivity extends AppCompatActivity {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
 
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hiii speak Now....");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Emma is listening...");
 
         try {
             startActivityForResult(intent, REQ_CODE_SPEECH_OUTPUT);
@@ -62,8 +71,15 @@ public class AssistantActivity extends AppCompatActivity {
             case REQ_CODE_SPEECH_OUTPUT:
                 if (resultCode == RESULT_OK && null != data) {
                     ArrayList<String> voiceInText = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    recText.setText(voiceInText.get(0));
                     text = voiceInText.get(0);
+
+                    TextView newText = new TextView(this);
+                    newText.setText(text + "\n");
+                    newText.setTextColor(Color.BLUE);
+                    newText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+
+                    linLayToSpeakScrlView.addView(newText);
+
                     toSpeech = new TextToSpeech(AssistantActivity.this, new TextToSpeech.OnInitListener() {
                         @Override
                         public void onInit(int status) {
@@ -74,6 +90,14 @@ public class AssistantActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(), "Internal Error", Toast.LENGTH_SHORT).show();
                                 } else {
                                     toSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+
+                                    TextView newResponse = new TextView(self);
+                                    newResponse.setTextColor(Color.RED);
+                                    newResponse.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                                    newResponse.setText(text + "\n");
+
+                                    linLayToSpeakScrlView.addView(newResponse);
+
                                 }
                             } else {
                                 Toast.makeText(getApplicationContext(), "Internal Error", Toast.LENGTH_SHORT).show();
