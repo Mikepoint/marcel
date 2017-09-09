@@ -3,6 +3,7 @@ package vcrms.marcel;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
@@ -29,8 +30,6 @@ public class AssistantActivity extends AppCompatActivity {
     private AssistantActivity self = this;
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
