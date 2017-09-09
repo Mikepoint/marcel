@@ -3,6 +3,7 @@ package vcrms.marcel;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
@@ -31,6 +32,7 @@ public class AssistantActivity extends AppCompatActivity {
     private int result;
     private LinkedList<TextView> textViews;
     private AssistantActivity self = this;
+    private GradientDrawable gradientDrawable = new GradientDrawable();
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
 
@@ -76,10 +78,14 @@ public class AssistantActivity extends AppCompatActivity {
                     text = voiceInText.get(0);
 
                     TextView newText = new TextView(this);
-                    newText.setText(text + "\n");
-                    newText.setTextColor(Color.BLUE);
+                    newText.setText("      " + text.substring(0,1).toUpperCase() + text.substring(1) + "\n");
+                    newText.setTextColor(Color.WHITE);
+                    gradientDrawable.setCornerRadius(20);
+                    gradientDrawable.setColor(Color.BLUE);
+                    newText.setBackground(gradientDrawable);
                     newText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                     linLayToSpeakScrlView.addView(newText);
+                    linLayToSpeakScrlView.addView(new TextView(this));
 
                     speakScrlView.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
 
@@ -103,8 +109,9 @@ public class AssistantActivity extends AppCompatActivity {
                                     TextView newResponse = new TextView(self);
                                     newResponse.setTextColor(Color.RED);
                                     newResponse.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                                    newResponse.setText(text + "\n");
+                                    newResponse.setText("      " + text.substring(0,1).toUpperCase() + text.substring(1) + "\n");
                                     linLayToSpeakScrlView.addView(newResponse);
+                                    linLayToSpeakScrlView.addView(new TextView(self));
                                     linLayToSpeakScrlView.postDelayed(new Runnable() {
                                         public void run() {
                                             speakScrlView.fullScroll(HorizontalScrollView.FOCUS_DOWN);
