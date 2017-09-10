@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
@@ -53,8 +54,16 @@ public class AssistantActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 btnToOpenMic();
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", "samsung_galaxy_s7");
+                startActivity(homeIntent);
             }
         });
+
+        Intent i = getIntent();
+        if(i.getBooleanExtra("openMic", false)) {
+            btnToOpenMic();
+        }
     }
 
     private void btnToOpenMic() {
