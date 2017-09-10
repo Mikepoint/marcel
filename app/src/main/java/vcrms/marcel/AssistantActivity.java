@@ -52,6 +52,7 @@ public class AssistantActivity extends AppCompatActivity {
             public void onClick(View v) {
                 btnToOpenMic();
                 Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", "samsung_galaxy_s7");
                 startActivity(homeIntent);
             }
         });
