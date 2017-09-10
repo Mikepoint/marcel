@@ -8,8 +8,6 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.TimeUtils;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -18,13 +16,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Random;
 
 public class AssistantActivity extends AppCompatActivity {
 
@@ -33,19 +27,11 @@ public class AssistantActivity extends AppCompatActivity {
     private LinearLayout linLayToSpeakScrlView;
     private TextToSpeech toSpeech;
     private String text;
-    private String state = "";
     private int result;
-    private LinkedList<TextView> textViews;
     private AssistantActivity self = this;
     private GradientDrawable gradientDrawable = new GradientDrawable();
     private ArrayList<String> questions = new ArrayList<String>(Arrays.asList("what", "how", "where", "when", "which"));
-    MessagesDatabase msgDb = new MessagesDatabase();
-    ArrayList<String> possibleMatches = new ArrayList<String>();
-    private ArrayList<String> jokes = new ArrayList<String>(Arrays.asList(
-            "Two tabels sit in a bar. A query walks in and asks them: Can I join you?",
-            "What does a programmer shout when he's sinking? ... F1! F1!",
-            "What's the name of Irina Login's sister? ... Irina Logout."
-    ));
+    private QueryBuilder qb = new QueryBuilder();
 
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
 
@@ -57,7 +43,6 @@ public class AssistantActivity extends AppCompatActivity {
         speakBtn = (ImageButton) findViewById(R.id.speakBtn);
         speakScrlView = (ScrollView) findViewById(R.id.speakScrlView);
         linLayToSpeakScrlView = (LinearLayout) findViewById(R.id.linLayToSpeakScrlView);
-        msgDb.initialize();
         speakBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,9 +79,7 @@ public class AssistantActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK && null != data) {
                     ArrayList<String> voiceInText = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     text = voiceInText.get(0);
-
-                    AnswerProcessor ap = new AnswerProcessor();
-                    AnswerKeywords ak = ap.generateAnswerKeywords(text.toLowerCase());
+                    String bk = voiceInText.get(0);
 
                     for (String question : questions) {
                         if (text.contains(question)) {
@@ -123,24 +106,62 @@ public class AssistantActivity extends AppCompatActivity {
                         }
                     }, 100L);
 
-                    if (possibleMatches == null) {
-                        possibleMatches = new ArrayList<String>();
+                    String str =Custom.match(bk);
+                    if (str != null) {
+                        text = str;
+                        speak();
+                        break;
                     }
-                    possibleMatches = generateResponse(ak, possibleMatches);
-
-                    if (possibleMatches != null) {
-                        Log.e("DUMP",""+possibleMatches.size());
-                        if (state == null || state.equals("")) {
-                            state = "brand";
-                        } else if (state.equals("brand")) {
-                            Log.e("meeeem","Switch to mem");
-                            state = "memory";
-                        } else if (state.equals("memory")) {
-                            state = "";
+                    if (bk.toLowerCase().contains("cancel")) {
+                        qb = new QueryBuilder();
+                        text = "How can I help you?";
+                        speak();
+                        break;
+                    }
+                    if (!qb.isReady()) {
+                        str = QueryBuilder.checkName(bk);
+                        if (str != null) {
+                            text = str;
+                            speak();
+                            Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                            homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                            startActivity(homeIntent);
+                            break;
+                        } else {
+                            str = QueryBuilder.factorize(bk);
+                            if (str != null) {
+                                qb.setCategory(str);
+                                text = qb.validators.get(0).askQuestion();
+                                speak();
+                                break;
+                            }
                         }
+                    } else {
+                        if (qb.nextSpec(bk)) {
+                            if (qb.isCompleted()) {
+                                text = qb.find();
+                                if (text == null) {
+                                    text = "Sorry, no matches found";
+                                    speak();
+                                    qb = new QueryBuilder();
+                                } else {
+                                    speak();
+                                    qb = new QueryBuilder();
+                                    Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                                    homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                                    startActivity(homeIntent);
+                                }
+                                break;
+                            }
+                        }
+                        text = qb.validators.get(qb.currentValidator).askQuestion();
+                        speak();
+                        break;
                     }
-                   // speak();
                 }
+
+                text = "Sorry I didn't get it.";
+                speak();
                 break;
         }
     }
@@ -153,127 +174,6 @@ public class AssistantActivity extends AppCompatActivity {
             toSpeech.stop();
             toSpeech.shutdown();
         }
-    }
-
-    public ArrayList<String> generateResponse(AnswerKeywords keywords, ArrayList<String> inheritedMatches) {
-        Log.e("DUMP inh",""+inheritedMatches.size());
-
-        if (keywords.isGreeting()) {
-            text = "Hi";
-            speak();
-            return null;
-        }
-        if (keywords.isHelp()) {
-            text = "I am here to help you find products you need. You can ask me about a certain product or we can find the best choice together.";
-            speak();
-            return null;
-        }
-        if (keywords.getProduct() != null) {
-            Log.e("Produuuct", keywords.getProduct());
-            text = keywords.getProduct();
-            speak();
-            Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-            homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-            startActivity(homeIntent);
-            return null;
-        }
-        if (state.equals("") && keywords.getOther() != null) {
-            if (keywords.getOther().contains("baby") || keywords.getOther().contains("call")) {
-                text = "Seriously? This is how you're trying to be funny?";
-                speak();
-                return null;
-            } else if (keywords.getOther().contains("joke")) {
-                Random rand = new Random();
-                text = jokes.get(rand.nextInt(jokes.size()));
-                speak();
-                return null;
-            } else if (keywords.getOther().contains("buy") && keywords.getOther().contains("emag")) {
-                text = "I'm still trying to figure it out. Anyone here was so nice to me since i've been booted.";
-                speak();
-                return null;
-            } else if (keywords.getOther().contains("time")) {
-                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
-                text = sdf.format(new Date());
-                speak();
-                return null;
-            }
-        }
-        if (state.equals("brand")) {
-            if (keywords.isNegation()) {
-                text = "How much memory do you want?";
-                speak();
-                return  inheritedMatches;
-            }
-            ArrayList<String> possibleMatchesList = msgDb.eliminateProducts(inheritedMatches, "brand", keywords.getOther());
-            if (possibleMatchesList.size() == 1) {
-                text = possibleMatchesList.get(0);
-                speak();
-                state = "";
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-                startActivity(homeIntent);
-                return null;
-            } else {
-                text = "How much memory do you want?";
-                speak();
-                return possibleMatchesList;
-            }
-        } else if (state.equals("memory")) {
-            if (keywords.isNegation() && !inheritedMatches.isEmpty()) {
-                text = inheritedMatches.get(0);
-                speak();
-                state = "";
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-                startActivity(homeIntent);
-                return  null;
-            }
-            ArrayList<String> possibleMatchesList = msgDb.eliminateProducts(inheritedMatches, "memory", keywords.getOther());
-            if (possibleMatchesList.size() == 1) {
-                text = possibleMatchesList.get(0);
-                speak();
-                state = "";
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-                startActivity(homeIntent);
-                return null;
-            } else if (possibleMatchesList.size() > 0) {
-                text =  possibleMatchesList.get(0);
-                speak();
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-                startActivity(homeIntent);
-                return null;
-            } else {
-                text =  "Could not find a product that matches the description";
-                state = "";
-                speak();
-                return null;
-            }
-        }
-        if (keywords.getCategory() != null && !keywords.getCategory().isEmpty()) {
-            ArrayList<String> possibleMatchesList = new ArrayList<String>();
-            possibleMatchesList.addAll(msgDb.productsOfCategory(keywords.getCategory().toLowerCase()));
-            if (possibleMatchesList.isEmpty()) {
-                text = "There is no such category. Please try again.";
-                state = "";
-                speak();
-                return null;
-            } else if (possibleMatchesList.size() == 1) {
-                text = possibleMatchesList.get(0);
-                speak();
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
-                startActivity(homeIntent);
-                return null;
-            }
-            text = "What brand do you want?";
-            speak();
-            return possibleMatchesList;
-        }
-        text = "I don't get it.";
-        speak();
-        return null;
     }
 
     private void speak() {
