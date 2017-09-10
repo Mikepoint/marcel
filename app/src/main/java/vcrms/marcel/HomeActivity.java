@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private final int SPLASH_TIME_OUT = 3000;
+    private final int SPLASH_TIME_OUT = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,5 +22,6 @@ public class HomeActivity extends AppCompatActivity {
                 finish();
             }
         }, SPLASH_TIME_OUT);
+
     }
 }
