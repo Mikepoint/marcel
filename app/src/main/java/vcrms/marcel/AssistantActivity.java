@@ -4,12 +4,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TimeUtils;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -18,10 +18,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Random;
 
 public class AssistantActivity extends AppCompatActivity {
 
@@ -37,8 +40,13 @@ public class AssistantActivity extends AppCompatActivity {
     private GradientDrawable gradientDrawable = new GradientDrawable();
     private ArrayList<String> questions = new ArrayList<String>(Arrays.asList("what", "how", "where", "when", "which"));
     MessagesDatabase msgDb = new MessagesDatabase();
-    //ArrayList<String> specifications = new ArrayList<String>(Arrays.asList("brand", "memory"));
     ArrayList<String> possibleMatches = new ArrayList<String>();
+    private ArrayList<String> jokes = new ArrayList<String>(Arrays.asList(
+            "Two tabels sit in a bar. A query walks in and asks them: Can I join you?",
+            "What does a programmer shout when he's sinking? ... F1! F1!",
+            "What's the name of Irina Login's sister? ... Irina Logout."
+    ));
+
     private final int REQ_CODE_SPEECH_OUTPUT = 143;
 
     @Override
@@ -54,9 +62,6 @@ public class AssistantActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 btnToOpenMic();
-                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
-                homeIntent.putExtra("product", "samsung_galaxy_s7");
-                startActivity(homeIntent);
             }
         });
 
@@ -167,7 +172,31 @@ public class AssistantActivity extends AppCompatActivity {
             Log.e("Produuuct", keywords.getProduct());
             text = keywords.getProduct();
             speak();
+            Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+            homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+            startActivity(homeIntent);
             return null;
+        }
+        if (state.equals("") && keywords.getOther() != null) {
+            if (keywords.getOther().contains("baby") || keywords.getOther().contains("call")) {
+                text = "Seriously? This is how you're trying to be funny?";
+                speak();
+                return null;
+            } else if (keywords.getOther().contains("joke")) {
+                Random rand = new Random();
+                text = jokes.get(rand.nextInt(jokes.size()));
+                speak();
+                return null;
+            } else if (keywords.getOther().contains("buy") && keywords.getOther().contains("emag")) {
+                text = "I'm still trying to figure it out. Anyone here was so nice to me since i've been booted.";
+                speak();
+                return null;
+            } else if (keywords.getOther().contains("time")) {
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd-MM-yyyy");
+                text = sdf.format(new Date());
+                speak();
+                return null;
+            }
         }
         if (state.equals("brand")) {
             if (keywords.isNegation()) {
@@ -180,6 +209,9 @@ public class AssistantActivity extends AppCompatActivity {
                 text = possibleMatchesList.get(0);
                 speak();
                 state = "";
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                startActivity(homeIntent);
                 return null;
             } else {
                 text = "How much memory do you want?";
@@ -187,11 +219,13 @@ public class AssistantActivity extends AppCompatActivity {
                 return possibleMatchesList;
             }
         } else if (state.equals("memory")) {
-            Log.e("DUMP statemem", keywords.getOther());
             if (keywords.isNegation() && !inheritedMatches.isEmpty()) {
                 text = inheritedMatches.get(0);
                 speak();
                 state = "";
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                startActivity(homeIntent);
                 return  null;
             }
             ArrayList<String> possibleMatchesList = msgDb.eliminateProducts(inheritedMatches, "memory", keywords.getOther());
@@ -199,10 +233,16 @@ public class AssistantActivity extends AppCompatActivity {
                 text = possibleMatchesList.get(0);
                 speak();
                 state = "";
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                startActivity(homeIntent);
                 return null;
             } else if (possibleMatchesList.size() > 0) {
                 text =  possibleMatchesList.get(0);
                 speak();
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                startActivity(homeIntent);
                 return null;
             } else {
                 text =  "Could not find a product that matches the description";
@@ -222,12 +262,17 @@ public class AssistantActivity extends AppCompatActivity {
             } else if (possibleMatchesList.size() == 1) {
                 text = possibleMatchesList.get(0);
                 speak();
+                Intent homeIntent = new Intent(AssistantActivity.this, ProductActivity.class);
+                homeIntent.putExtra("product", text.toLowerCase().replace(' ', '_'));
+                startActivity(homeIntent);
                 return null;
             }
             text = "What brand do you want?";
             speak();
             return possibleMatchesList;
         }
+        text = "I don't get it.";
+        speak();
         return null;
     }
 

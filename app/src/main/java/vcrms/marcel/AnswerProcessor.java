@@ -28,6 +28,11 @@ public class AnswerProcessor {
 		if (msgDb.isGreeting(recievedMessage)) {
 			answer.setGreeting(true);
 		}
+		String productName = msgDb.matchesProduct(recievedMessage);
+		if ( productName != null) {
+			answer.setProduct(productName);
+			return answer;
+		}
 		ArrayList<String> possibleMatches = new ArrayList<String>();
 		boolean processedMessage = false;
 		
@@ -35,23 +40,23 @@ public class AnswerProcessor {
 			if (!msgDb.isRelevant(word)) {
 				continue;
 			}
-			if (!possibleMatches.isEmpty()) {
-				for (String match : possibleMatches) {
-					if (!match.contains(word)) {
-						if (possibleMatches.size() > 1) {
-							possibleMatches.remove(match);
-						} else {
-							answer.setProduct(match);
-							processedMessage = true;
-							continue;
-						}
-					}
-				}
-				if (possibleMatches.size() == 1) {
-					answer.setProduct(possibleMatches.get(0));
-					processedMessage = true;
-				}
-			}
+//			if (!possibleMatches.isEmpty()) {
+//				for (String match : possibleMatches) {
+//					if (!match.contains(word)) {
+//						if (possibleMatches.size() > 1) {
+//							possibleMatches.remove(match);
+//						} else {
+//							answer.setProduct(match);
+//							processedMessage = true;
+//							continue;
+//						}
+//					}
+//				}
+//				if (possibleMatches.size() == 1) {
+//					answer.setProduct(possibleMatches.get(0));
+//					processedMessage = true;
+//				}
+//			}
 
 			String action;
 			if ((action = msgDb.isAction(word)) != null) {
@@ -64,18 +69,19 @@ public class AnswerProcessor {
 				processedMessage = true;
 				continue;
 			}
-			possibleMatches = msgDb.containsProduct(word);
-			if (possibleMatches.size() == 1) {
-				answer.setProduct(possibleMatches.get(0));
-				processedMessage = true;
-			}
+
+//			possibleMatches = msgDb.containsProduct(word);
+//			if (possibleMatches.size() == 1) {
+//				answer.setProduct(possibleMatches.get(0));
+//				processedMessage = true;
+//			}
 			
 			
 		}
-		if (!possibleMatches.isEmpty()) {
-			answer.setProduct(possibleMatches.get(0));
-			processedMessage = true;
-		}
+//		if (!possibleMatches.isEmpty()) {
+//			answer.setProduct(possibleMatches.get(0));
+//			processedMessage = true;
+//		}
 
 		if (processedMessage == false) {
 			answer.setOther(recievedMessage);

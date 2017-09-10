@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 public class ProductActivity extends AppCompatActivity {
@@ -26,12 +28,15 @@ public class ProductActivity extends AppCompatActivity {
         speakBtn = (ImageButton) findViewById(R.id.speakBtn);
         productImage = (ImageView) findViewById(R.id.productImage);
 
-        productImage.setImageResource(R.drawable.samsung_galaxy_s7);
-
         Intent i = getIntent();
         String product = i.getStringExtra("product");
 
+        try {
+            Field f = R.drawable.class.getField(product);
+            productImage.setImageResource(f.getInt(null));
+        } catch (Exception e) {
 
+        }
 
         speakBtn.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -44,8 +44,7 @@ public class MessagesDatabase {
 		unnecessaryWords.add("any");
 		unnecessaryWords.add("to");
 		//unnecessaryWords.add("");
-		
-		actions.add("buy");
+
 		actions.add("purchase");
 		actions.add("want");
 		actions.add("find");
@@ -82,12 +81,12 @@ public class MessagesDatabase {
 	
 	private void addProducts() {
 		//String price, String size, String memory, String brand, String platform, String image) {
-		products.put("galaxy s7", new Product("phone", "three", "samsung", ""));
-		products.put("galaxy s5", new Product("phone", "two", "samsung", ""));
+		products.put("galaxy s7", new Product("phone", "two", "samsung", ""));
+		products.put("galaxy s8", new Product("phone", "three", "samsung", ""));
 		products.put("iphone 6", new Product("phone", "two", "apple", ""));
 		products.put("iphone 7", new Product("phone", "three", "apple", ""));
-		products.put("hp probook", new Product("laptop", "8", "hp", ""));
-
+		products.put("hp probook", new Product("laptop", "eight", "hp", ""));
+		products.put("dell inspiration", new Product("laptop", "eight", "dell", ""));
 	}
 
 	public boolean isHelpRequests(String message) {
@@ -188,5 +187,14 @@ public class MessagesDatabase {
 			Log.e("left", ""+possibleMatches.get(i));
 		}
 		return possibleMatches;
+	}
+
+	public String matchesProduct(String recievedMessage) {
+		for (String product : products.keySet()) {
+			if (recievedMessage.contains(product)) {
+				return product;
+			}
+		}
+		return null;
 	}
 }
